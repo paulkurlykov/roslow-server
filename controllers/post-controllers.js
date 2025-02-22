@@ -54,7 +54,7 @@ async function getPostById(req, res, next) {
 
         const userId = req.user.id;
 
-        const post = await prisma.post.findUnique({
+        const post = await new PrismaClient().post.findUnique({
             where: { id },
             include: {
               comments: {
