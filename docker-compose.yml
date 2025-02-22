@@ -1,0 +1,19 @@
+version: "3"
+services: 
+  auth-project-server:
+    build: .
+    ports:
+      - "3001:3001"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: "mongodb://monty:pass@db:27017/mydatabase?authSource=admin&directConnection=true"
+
+  db:
+    image: prismagraphql/mongo-single-replica:4.4.3-bionic
+    platform: linux/amd64
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: monty
+      MONGO_INITDB_ROOT_PASSWORD: pass
