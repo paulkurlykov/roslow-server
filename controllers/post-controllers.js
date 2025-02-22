@@ -27,6 +27,7 @@ async function createPost(req, res, next) {
 
 async function getPosts(req, res, next) {
     try {
+        console.log('POSTSSSS');
         const userId = req.user.id;
         const posts = await new PrismaClient().post.findMany({
             include: {
@@ -38,6 +39,8 @@ async function getPosts(req, res, next) {
                 createdAt: "desc",
             },
         });
+
+        console.log('is here');
 
         return res.json(posts);
     } catch (err) {

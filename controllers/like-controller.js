@@ -34,19 +34,21 @@ async function likePost(req, res, next) {
 
 async function unlikePost(req, res, next) {
     try {
-        const { id } = req.params;
+        const { id: postId } = req.params;
         const userId = req.user.id;
 
-        if(!id) {
-            throw ApiError.BadRequest("id лайка не передан");
+        if(!postId) {
+            throw ApiError.BadRequest("postId не передан");
         }
 
         if(!userId) {
             throw ApiError.UnauthorizedError();
         }
 
+        const like = await new PrismaClient().like.findFirst({where: {postId, userId}})
+
         const deletedLike = await new PrismaClient().like.delete({
-            where: {id}
+            where: {id: like.id}
         })
 
         if(!deletedLike) {
