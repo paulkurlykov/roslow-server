@@ -54,14 +54,18 @@ async function getPostById(req, res, next) {
 
         const userId = req.user.id;
 
-        const post = await new PrismaClient().post.findUnique({
+        const post = await prisma.post.findUnique({
             where: { id },
             include: {
-                likes: true,
-                author: true,
-                comments: true,
-            },
-        });
+              comments: {
+                include: {
+                  user: true,
+                }
+              },
+              likes: true,
+              author: true
+            }, // Include related posts
+          });
 
         if (!post) {
             throw ApiError.BadRequest("Такой пост не найден!")
