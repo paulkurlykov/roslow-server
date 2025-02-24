@@ -28,22 +28,29 @@ async function createComment(req, res, next) {
 
 async function deleteComment(req, res, next) {
     try {
-        const { id } = req.params;
+        const { id: commentId } = req.params;
         const userId = req.user.id;
 
-        if (id !== userId) {
+
+        const comment = await new PrismaClient().comment.findUnique({where: {id: commentId}});
+
+        if(!comment) {
+            throw ApiError.BadRequest("Комментарий не найден");
+        }
+
+        const {userId: authorId} = comment;
+
+
+
+        if(authorId !== userId) {
             throw ApiError.forbidden();
         }
 
         const deletedComment = await new PrismaClient().comment.delete({
-            where: {id}
+            where: {id: commentId}
         })
 
-        if(!deletedComment) {
-            throw ApiError.BadRequest("Комментарий не найден");
-        }
-
-        return res.json(deletedComment);
+        return res.json({message: "comment has been successfully deleted", deletedComment});
 
     } catch (err) {
         next(err);
