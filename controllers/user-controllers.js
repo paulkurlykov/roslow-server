@@ -143,12 +143,19 @@ async function getUsers(req, res, next) {
 }
 
 async function updateUser(req, res, next) {
+    console.log("updating...");
     try {
         // id - из параметров url
         const { id } = req.params;
 
         // берем весь присланный обьект
         const updatingUser = req.body;
+
+        if (req.file) {
+            updatingUser.avatarUrl = `/uploads/${req.file.filename}`;
+            // console.log("Файл", req.file);
+            // console.log("Путь к файлу", req.file.path);
+        }
 
         // пользователь должен редактировать только свой профиль. В url должен быть его id, а в req.user.id - id из токена. Если они не совпадают, значит ошибка доступа.
         if (id !== req.user.id) {
