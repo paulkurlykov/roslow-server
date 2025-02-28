@@ -50,7 +50,7 @@ async function registration(req, res, next) {
 
         // Отправка письма пользователю (импортируем функцию mailService, которую ранее сами создали)
 
-        // await mailService.sendActivationMail(email, `${process.env.API_URL}/api/users/activation/${activationLink}`);
+        await mailService.sendActivationMail(email, `${process.env.API_URL}/api/users/activation/${activationLink}`);
 
         // создаем токены
         const userDto = createUserDto(user); // просто функция, которая берет user, прячет некоторые свойства и возвращает обьект с усеченными свойствами. Для приватности. Функцию писали мы сами.
@@ -70,6 +70,9 @@ async function registration(req, res, next) {
     }
 }
 async function login(req, res, next) {
+
+    console.log('login controller is starting');
+
     try {
         // получаем и валидируем пару логин-пароль
         const { email, password } = req.body;
@@ -86,11 +89,18 @@ async function login(req, res, next) {
             throw ApiError.BadRequest(`Пользователь с таким email не был найден`);
         }
 
+        console.log(user.isActivated);
+
+        if(!user.isActivated) {
+            console.log("isActivated? ", user.isActivated);
+            throw ApiError.BadRequest("Активируйте пожлста вашу учетку (ссылка отправлена на почту)")
+        }
+
         // проверяем уникальность пароля
         const isPassEqual = await bcrypt.compare(password, user.password);
 
         if (!isPassEqual) {
-            throw ApiError.BadRequest(`Неверный пароль`);
+            throw ApiError.BadRequest(`Неверныыыыый пароль`);
         }
 
         // генерим токены, отправляем юзера и токены на клиент
@@ -275,6 +285,7 @@ async function activation(req, res, next) {
         console.log(activationLink);
         const prisma = new PrismaClient();
         const user = await prisma.user.findFirst({ where: { activationLink } });
+
         // Если мы не нашли пользователя с такой ссылкой, значит ссылка ошибочна (так как корректная обязательно должна быть, она создавалась при регистрации)
         if (!user) {
             throw new Error("Некорректная ссылка активации");
@@ -289,6 +300,7 @@ async function activation(req, res, next) {
 
         // return res.json({message: "ALL IS SUCCESS"})
     } catch (err) {
+
         next(err);
     }
 }

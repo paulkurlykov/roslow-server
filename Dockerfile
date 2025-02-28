@@ -1,5 +1,7 @@
+#Development stage
+
 # используем линукс alpine с версией node 14
-FROM node:19.5.0-alpine 
+FROM node:19.5.0-alpine AS development
 # Указывваем рабочую директорию
 WORKDIR /app
 # Скопировать package.json и lock внутрь контейнера
