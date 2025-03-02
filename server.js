@@ -18,6 +18,10 @@ app.use(express.json());
 app.use(cors());
 app.use(cookieParser());
 
+Object.keys(require.cache).forEach((key) => {
+    delete require.cache[key];
+  });
+
 app.use("/api", router);
 app.use("/uploads", express.static("uploads"));
 app.use(errorMiddleware);

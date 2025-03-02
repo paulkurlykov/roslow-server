@@ -6,10 +6,12 @@ const tokenService = require("../service/token-service");
 const createUserDto = require("../dtos/user-dto");
 const ApiError = require("../exceptions/api-errors");
 const { validationResult } = require("express-validator");
-const { findToken } = require("../service/token-service");
 
 async function registration(req, res, next) {
     try {
+
+        console.log('this is registration');
+
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return next(ApiError.BadRequest("Ошибка при валдиации", errors.array()));
@@ -29,7 +31,8 @@ async function registration(req, res, next) {
 
         // Проверяем, есть ли пользователь
         if (existingUser) {
-            throw ApiError.BadRequest(`Пользователь с таким email уже существует`);
+            console.log("отбивочка внутри existing user")
+            throw ApiError.BadRequest(`Пользователь с таким email уже существует!`);
         }
 
         // Хешируем пароль
@@ -70,15 +73,12 @@ async function registration(req, res, next) {
     }
 }
 async function login(req, res, next) {
-
-    console.log('login controller is starting');
-
     try {
         // получаем и валидируем пару логин-пароль
         const { email, password } = req.body;
 
         if (!email || !password) {
-            throw ApiError.BadRequest(`Вы не указали почту или ппароль для логина`);
+            throw ApiError.BadRequest(`Вы не указали почту или пароль для логина`);
         }
 
         // находим пользователя по email
@@ -86,10 +86,8 @@ async function login(req, res, next) {
         const user = await prisma.user.findUnique({ where: { email } });
 
         if (!user) {
-            throw ApiError.BadRequest(`Пользователь с таким email не был найден`);
+            throw ApiError.BadRequest(`Нет таких!`);
         }
-
-        console.log(user.isActivated);
 
         if(!user.isActivated) {
             console.log("isActivated? ", user.isActivated);
@@ -100,7 +98,7 @@ async function login(req, res, next) {
         const isPassEqual = await bcrypt.compare(password, user.password);
 
         if (!isPassEqual) {
-            throw ApiError.BadRequest(`Неверныыыыый пароль`);
+            throw ApiError.BadRequest(`Неверныый пароль`);
         }
 
         // генерим токены, отправляем юзера и токены на клиент
@@ -111,7 +109,8 @@ async function login(req, res, next) {
             maxAge: 15 * 60 * 1000,
             httpOnly: true,
         });
-        res.json({ ...tokens, user: userDto });
+
+        res.json({ ...tokens, user: userDto});
     } catch (err) {
         next(err);
     }
@@ -301,46 +300,6 @@ async function activation(req, res, next) {
         // return res.json({message: "ALL IS SUCCESS"})
     } catch (err) {
 
-        next(err);
-    }
-}
-
-// module.exports = new UserController();
-
-async function login(req, res, next) {
-    try {
-        // получаем и валидируем пару логин-пароль
-        const { email, password } = req.body;
-
-        if (!email || !password) {
-            throw ApiError.BadRequest(`Вы не указали почту или ппароль для логина`);
-        }
-
-        // находим пользователя по email
-        const prisma = new PrismaClient();
-        const user = await prisma.user.findUnique({ where: { email } });
-
-        if (!user) {
-            throw ApiError.BadRequest(`Пользователь с таким email не был найден`);
-        }
-
-        // проверяем уникальность пароля
-        const isPassEqual = await bcrypt.compare(password, user.password);
-
-        if (!isPassEqual) {
-            throw ApiError.BadRequest(`Неверный пароль`);
-        }
-
-        // генерим токены, отправляем юзера и токены на клиент
-        const userDto = createUserDto(user);
-        const tokens = tokenService.generateTokens(userDto);
-        await tokenService.saveToken(userDto.id, tokens.refreshToken);
-        res.cookie("refreshToken", tokens.refreshToken, {
-            maxAge: 15 * 60 * 1000,
-            httpOnly: true,
-        });
-        res.json({ ...tokens, user: userDto });
-    } catch (err) {
         next(err);
     }
 }

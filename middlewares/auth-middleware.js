@@ -8,7 +8,6 @@ module.exports = function(req, res, next) {
 
         // Проверяем его наличие
         if(!authorizationHeader) {
-            console.log('нет хедера');
             return next(ApiError.UnauthorizedError());
         }
 
@@ -29,7 +28,7 @@ module.exports = function(req, res, next) {
             return next(ApiError.UnauthorizedError());
         }
 
-        console.log('user, who makes the request (userDTO) ', userDto);
+        console.log('user, who makesss the request (userDTO) ', userDto);
 
         req.user = userDto;
 
