@@ -25,7 +25,7 @@ services:
             - roslow
 
     frontend:
-        build: ../client
+        build: ../roslow-client
         ports:
             - "5050:5050"
         restart: unless-stopped
@@ -39,7 +39,7 @@ services:
         ports:
             - "5050:5050"
         volumes:
-            - "../client/nginx.conf:/etc/nginx/nginx.conf"
+            - "../rolsow-client/nginx.conf:/etc/nginx/nginx.conf"
         depends_on:
             - backend
             - frontend
